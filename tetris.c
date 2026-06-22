@@ -1,12 +1,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
+
 
 typedef struct{
     char tipo[10];
     int id;
 
 }pecas;
+
+
 
 #define MAX 5
 
@@ -17,6 +21,12 @@ typedef struct{
     int total;
 } Fila;
 
+typedef struct{
+    pecas itens[MAX];
+    int topo;
+} Pilha;
+
+//codigos da fila
 void inicializarFila(Fila *f){
     f->inicio=0;
     f->fim=0;
@@ -31,6 +41,7 @@ int filaVazia(Fila *f){
 }
 
 void inserir(Fila *f, pecas p){
+
     if(filaCheia(f)){
         printf("Fila cheia.\n");
         return;
@@ -39,16 +50,31 @@ void inserir(Fila *f, pecas p){
     f->fim = (f->fim + 1) % MAX;
     f->total++;
 }
+void adicionarPecas(Fila *f, pecas p, int t){
+    int nu;
+
+    char *non[]={"T","O","L","i"};
+    
+    srand(time(NULL));
+    nu = (rand()% 4) + 1;
+    
+
+    strcpy(p.tipo,non[nu]);
+    p.id = t;
+    inserir(f,p);
+    
+}
 
 void remover(Fila *f, pecas *p){
     if(filaVazia(f)){
         printf("Fila vazia\n");
         return;
     }
-    *p= f->itens[f->inicio];
+    *p = f->itens[f->inicio];
     f->inicio = (f->inicio+1)%MAX;
     f->total--;
 }
+
 
 void mostrarFila(Fila *f){
     printf("Fila: ");
@@ -64,6 +90,31 @@ void mostrarFila(Fila *f){
 
     
 }
+//codigos da pilha
+
+void inicializarPilha(Pilha *pi){
+    pi->topo = -1;
+}
+
+int pilhaVazia(Pilha *pi){
+    return pi->topo == -1;
+}
+
+int pilhaCheia(Pilha *pi){ 
+    return pi->topo == MAX -1;
+}
+
+
+
+void push(Pilha *pi, pecas nova){
+    if(pilhaCheia(pi)){
+        printf("Pilha cheia\n");
+        return;
+    }
+    pi->topo++;
+    pi->itens[pi->topo]= nova; 
+}
+
 //função de limpeza de buffer
 void  limparBufferEntrada(){
   int c;
@@ -71,14 +122,36 @@ void  limparBufferEntrada(){
 
 }
 
+void mostrarPilha(Pilha *pi){
+    printf("Pilha Reserva:");
+    for(int i = pi->topo;i>=0;i--){
+        printf("[%s, %d]",pi->itens[i].tipo,pi->itens[i].id);
+    }
+    printf("\n");
+}
+void pop(Pilha *pi,pecas *removida){
+    if(pilhaVazia(pi)){
+        printf("Pilha vazia\n");
+        return;
+    }
+
+    *removida =pi->itens[pi->topo];
+    pi->topo--;
+}
+
 int main(){
+    int t=4;
+    Pilha pi;
+    pecas p;
     pecas removida;
-    char nome;
-    int i= 4;
+    pecas nova;
     int opcao;
     Fila f;
-    inicializarFila(&f);//inicialisar fila
+    inicializarFila(&f);
+    inicializarPilha(&pi);//inicialisar fila
 //insere algumas pecas na fila
+    
+
     pecas p1={"T",0};
     pecas p2={"O",1};
     pecas p3={"L",2};
@@ -96,11 +169,12 @@ int main(){
 
         printf("---TETRIS STACK---\n");
         mostrarFila(&f);//mostrar a fila
-
+        mostrarPilha(&pi);
          printf("1-Jogar pecas(dequeue)\n");
-         printf("2-Inseir nova peca:\n");
-         printf("3-Sair\n");
-         printf("Digite uma opcao:\n");
+         printf("2-reservar peca(push):\n");
+         printf("3-Usar peca reserva(pop)\n");
+         printf("0-Sair\n");
+         printf("Digite uma opcao:");
          scanf("%d",&opcao);
          limparBufferEntrada();
 
@@ -108,22 +182,33 @@ int main(){
         switch(opcao){
             case 1:
           
-          remover(&f, &removida);
-          printf("Peca removida: %s, %d\n", removida.tipo,removida.id);
-         
+            remover(&f, &removida);
+            printf("Peca removida: %s, %d\n", removida.tipo,removida.id);
+            t++;
+            printf("adicionando uma peca\n");
+            
+            adicionarPecas(&f,p,t);
+            mostrarFila(&f);
+            printf("pressione enter......");
+            getchar();
             break;
 
             case 2:
-            
-            printf("adicionar uma peca");
-            printf("Digite um item para inserir:");
-            scanf("%s",&nome);
-            i++;
-            pecas p6 = {nome, i};
-            inserir(&f,p6);
-            
 
+            remover(&f,&nova);
+            push(&pi,nova);
+            mostrarPilha(&pi);
+            printf("pressione enter......");
+            getchar();
 
+            break;
+            case 3:
+           pop(&pi,&removida);
+           inserir(&f,removida);
+           mostrarFila(&f);
+           mostrarPilha(&pi);
+           printf("pressione enter.....");
+           getchar();
             break;
 
             case 0:
@@ -133,7 +218,7 @@ int main(){
         }
 
 
-    }while(opcao !=3);
+    }while(opcao !=0);
 
     printf("fim");
 return 0;
